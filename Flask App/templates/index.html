@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta http-equiv="pragma" content="no-cache" />
+    
+
+    <title>GoogleX</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="header">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="/">Home</a></li>
+        </ul>
+        <h3 class="text-muted">GoogleX team project</h3>
+      </div>
+
+      <div class="bs-callout bs-callout-default">
+        <h4>Brief about this website</h4>
+        This web app is meant to be a demo of CI-6226 project and it represents a simple textbox to receive input and 
+		search in the text files and grap the search result.
+		<br />
+		Team members:
+		<br />
+		<ul>
+			<li>Dwivedi Vijay Prakash</li>
+			<li>Shakya Manoj</li>
+			<li>Emadeldeen Ahmed</li>
+		</ul>
+		
+		</div>
+
+
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+	            <h3 class="panel-title pull-left">Input</h3>
+	            <div class="clearfix"></div>
+          </div>
+          <div class="panel-body">
+
+            <div class="form-group ">
+                <form action="{{url_for('my_form_post')}}" method="POST">
+                    <ul class="list-inline">
+                      <li>
+                        <label class="control-label" >Enter keyword(s)</label>
+                      </li>
+                      <li>
+                        <input type="text" id="keyword" name="keywords" class="form-control" placeholder="Keyword(s)"></input>
+                      </li>
+                    </ul>
+<!--                    <button type="button" class="btn btn-primary" id="search_btn">Search</button>-->
+                    <input type="submit">
+                </form>
+            </div>
+
+		</div>
+		</div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+	            <h3 class="panel-title pull-left">Search Result</h3>
+	            <div class="clearfix"></div>
+          </div>
+          <div class="panel-body">
+
+
+                <div class="form-group ">
+                    <ul class="list-inline">
+
+
+                      <li>
+                        <div id="place_for_result">{{result|safe}}</div>
+                      </li>
+                    </ul>
+                </div>
+          </div>
+</div>
+
+
+
+
+
+<!--       <div class="footer">
+        <p>.</p>
+      </div>
+ -->
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> 
+<script>
+$("#search_btn").click(function(){
+    var keyword = $(keyword).val();
+    $.ajax({
+      url: "/suggestions",
+      type: "get",
+      data: {jsdata: keyword},
+      success: function(response) {
+	  
+		console.log(response)
+        $("#place_for_result").html(response);
+      },
+      error: function(xhr) {
+        //Do Something to handle error
+      }
+    });
+});
+
+</script>
+<!--<script type="text/javascript" src="{{ url_for('static', filename='js/backfix.min.js') }}"></script>-->
+
+  </body>
+</html>
