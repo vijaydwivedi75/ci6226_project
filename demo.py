@@ -5,6 +5,9 @@ import string
 from nltk.stem.porter import *
 import time
 import pickle
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
 
 ##########################
 def preprocess_keywords(keywords):
@@ -47,8 +50,8 @@ def tokenize(file_content, file_path):
 
 def linguistic_clean(token_file_path_pairs):
     modified_list = []
-    for pair in token_file_path_pairs:
 
+    for pair in token_file_path_pairs:
         token, file_path = pair
 
         # Removing punctuations
@@ -57,7 +60,7 @@ def linguistic_clean(token_file_path_pairs):
             if char in punctuations:
                 token = token.replace(char, "")
 
-                # Lowercasing the token
+        # Lowercasing the token
         token = token.lower()
 
         # Stemming
@@ -99,12 +102,26 @@ def get_inv_index(data_path):
     return inv_index
 
 ##########################
+# dataset path
 data_path = r"C:/Users/emade/Downloads/ci6226_project-master/HillaryEmails/"
 
-keyword_original = "obama Jeffrey Sullivan Jacob Feltman Jeffrey Sanderson Janet "
+stop_words = set(stopwords.words('english'))   # list of stop words from NLTK
+
+times = []
+keyword_originals = "obama obama  Jeffrey Sullivan Jacob Feltman Jeffrey Sanderson Janet "
+
+keyword_originals = re.sub(' +', ' ', keyword_originals)  # Removes unncessarcy spaces
+
+keywords = keyword_originals.split(" ")  # spliting by spaces
+
+# remove stop words
+keywords = [w for w in keywords if not w in stop_words]
+
+keywords = list(set(keywords))  # Remove repeated words.
+if '' in keywords:
+    keywords.remove('')
 
 start_time = time.time()
-keywords = keyword_original.split(" ")
 
 ## Checking and saving inverted index as oickle files ####
 inv_idx_pkl_name = "inv_index.pkl"
@@ -115,7 +132,11 @@ else:
     inv_index = get_inv_index(data_path)
     pickle_out = open(inv_idx_pkl_name, 'wb')
     pickle.dump(inv_index, pickle_out)
+
+# inv_index = get_inv_index(data_path)
+
 inv_idx_time = time.time() - start_time
+times.append(inv_idx_time)
 print(f"Creating inverted indexes required: {inv_idx_time}")
 ###########################################################
 
@@ -130,9 +151,10 @@ try:
     for i in range(len(keywords)):
         # getting the inverted index of keyword
         kwd_inv_idx = inv_index[keywords[i]]
-        print(f"Getting inverted index of {keywords[i]} required {time.time() - start_time}s")
+
+        #print(f"Getting inverted index of {keywords[i]} required {time.time() - start_time}s")
         results.append([i.replace(data_path, "") for i in kwd_inv_idx])
-        start_time = time.time()
+        #start_time = time.time()
 
     # Applying intersection to get the ANDed results of keywords
     if len(results) > 1:
@@ -143,8 +165,11 @@ try:
 
     durtion = time.time() - start_time
     duration_in_sec = "{.4f}s".format(durtion)
-    sent_result = f"Time required: {duration_in_sec}<br />{keyword_original} became --> {preprocessed_keywords} <br />They appeared in the following text files: <br />"
+    sent_result = f"Time required: {duration_in_sec}<br />{keyword_originals} became --> {preprocessed_keywords} <br />They appeared in the following text files: <br />"
     result = "<br />".join(result)
     sent_result += result
 except:
-    sent_result = f"{keyword_original} became --> {preprocessed_keywords} <br />However, they are not found in the documents!!"
+    sent_result = f"{keyword_originals} became --> {preprocessed_keywords} <br />However, they are not found in the documents!!"
+
+# print(times)
+# print("Done")
