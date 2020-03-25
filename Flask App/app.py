@@ -5,6 +5,8 @@ import re
 import string
 from nltk.stem.porter import *
 from flask import Flask, render_template, request, redirect, url_for
+import time
+import pickle
 app = Flask(__name__)
 
 
@@ -91,6 +93,14 @@ def create_posting(sorted_token_file_path_pairs):
     inv_index['__freq__'] = token_frequency
     return inv_index
 
+def get_inv_index(data_path):
+    all_pairs = []
+    for file in list_all_files(data_path):
+       all_text = read_file(file)
+       all_pairs.extend(tokenize(all_text, file))
+
+    inv_index = create_posting(sort_tokens(linguistic_clean(all_pairs)))
+    return inv_index
 
 ##########################
 
@@ -100,24 +110,56 @@ def main():
 
 @app.route('/', methods=['GET', 'POST'])
 def my_form_post():
+    data_path = r"C:/Users/emade/Downloads/ci6226_project-master/HillaryEmails/"
     keyword_original = request.form['keywords']
-    all_pairs = []
-    data_path = r"C:/Users/Emad/Desktop/HillaryEmails/"
-    for file in list_all_files(data_path)[23:26]:
-       all_text = read_file(file)
-       all_pairs.extend(tokenize(all_text, file))
+    start_time = time.time()
+    keywords = keyword_original.split(" ")
 
-    inv_index = create_posting(sort_tokens(linguistic_clean(all_pairs)))
-    keyword = preprocess_keywords([keyword_original])[0]
-    result = inv_index[keyword]
-    result = [i.replace(data_path, "") for i in result]
-    sent_result = f"{keyword_original} became --> {keyword} <br /> it appeared in the following text files: <br />"
-    result = "<br />".join(result)
-    sent_result += result
-    # processed_text = text.upper()
-    # return processed_text
+    ## Checking and saving inverted index as oickle files ####
+    inv_idx_pkl_name = "inv_index.pkl"
+    if os.path.exists(inv_idx_pkl_name):
+        pickle_in = open(inv_idx_pkl_name, "rb")
+        inv_index = pickle.load(pickle_in)
+    else:
+        inv_index = get_inv_index(data_path)
+        pickle_out = open(inv_idx_pkl_name, 'wb')
+        pickle.dump(inv_index, pickle_out)
+    # inv_idx_time = time.time() - start_time
+    #print(f"Creating inverted indexes required: {inv_idx_time}")
+    ###########################################################
+
+    # Applying the same transformations on keywords,
+    keywords = preprocess_keywords(keywords)
+    preprocessed_keywords = " ".join(keywords)
+
+    results = []
+    try:
+        # start_time = time.time()
+        for i in range(len(keywords)):
+            # getting the inverted index of keyword
+            kwd_inv_idx = inv_index[keywords[i]]
+            #print(f"Getting inverted index of {keywords[i]} required {time.time() - start_time}s")
+            results.append([i.replace(data_path, "") for i in kwd_inv_idx])
+            # start_time = time.time()
+
+        # Applying intersection to get the ANDed results of keywords
+        if len(results) > 1:
+            result = set(results[0]).intersection(*results[1:])
+            #print(f"Getting intersection required: {time.time() - start_time}")
+        else:
+            result = results[0]
+
+        durtion = time.time() - start_time
+        sent_result = f"Time required: {round(durtion,2)}s<br /> ***********************************<br /> "
+        # sent_result +=f"{keyword_original} became --> {preprocessed_keywords} <br />"
+        sent_result +=f"Keyword(s) appeared in the following text files: <br />"
+        result = "<br />".join(result)
+        sent_result += result
+    except:
+        sent_result = f"Sorry!! .. Keyowrd(s) not found in any of the documents!!"
+
     return render_template('index.html', result=sent_result)
-    # return redirect(url_for('my_form_post'))
+
 
 if __name__ == "__main__":
     app.run(port=8050)
