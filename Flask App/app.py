@@ -7,6 +7,10 @@ from nltk.stem.porter import *
 from flask import Flask, render_template, request, redirect, url_for
 import time
 import pickle
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+
 app = Flask(__name__)
 
 
@@ -111,9 +115,19 @@ def main():
 @app.route('/', methods=['GET', 'POST'])
 def my_form_post():
     data_path = r"C:/Users/emade/Downloads/ci6226_project-master/HillaryEmails/"
+    stop_words = set(stopwords.words('english'))  # list of stop words from NLTK
+
     keyword_original = request.form['keywords']
     start_time = time.time()
+    keyword_original = re.sub(' +', ' ', keyword_original)  # Removes unncessarcy spaces
+
     keywords = keyword_original.split(" ")
+    # remove stop words
+    keywords = [w for w in keywords if not w in stop_words]
+    keywords = list(set(keywords))  # Remove repeated words.
+    if '' in keywords:
+        keywords.remove('')
+
 
     ## Checking and saving inverted index as oickle files ####
     inv_idx_pkl_name = "inv_index.pkl"
@@ -150,7 +164,8 @@ def my_form_post():
             result = results[0]
 
         durtion = time.time() - start_time
-        sent_result = f"Time required: {round(durtion,2)}s<br /> ***********************************<br /> "
+        sent_result = f"Keyword(s):  {keyword_original}<br />"
+        sent_result += f"Time required: {round(durtion,2)}s<br /> ***********************************<br /> "
         # sent_result +=f"{keyword_original} became --> {preprocessed_keywords} <br />"
         sent_result +=f"Keyword(s) appeared in the following text files: <br />"
         result = "<br />".join(result)
