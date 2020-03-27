@@ -158,6 +158,7 @@ def my_form_post():
 
         # Applying intersection to get the ANDed results of keywords
         if len(results) > 1:
+            result.sort(key=len)  # to sort according to the lengths of the lists inside
             result = set(results[0]).intersection(*results[1:])
             #print(f"Getting intersection required: {time.time() - start_time}")
         else:
