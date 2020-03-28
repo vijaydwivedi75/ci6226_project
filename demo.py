@@ -151,14 +151,21 @@ try:
     for i in range(len(keywords)):
         # getting the inverted index of keyword
         kwd_inv_idx = inv_index[keywords[i]]
-
+  
         #print(f"Getting inverted index of {keywords[i]} required {time.time() - start_time}s")
-        results.append([i.replace(data_path, "") for i in kwd_inv_idx])
+        results.append([i.replace("", "") for i in kwd_inv_idx])
+        if i==0:
+          smallest_freq = len(inv_index[keywords[0]])
+        elif smallest_freq > len(inv_index[keywords[i]]):
+            results[0], result[i] = results[i], results[0] # swapping
         #start_time = time.time()
+    
+    print(f"Getting values of corresponding keyword required: {time.time() - start_time}")
+    #print(results)
 
     # Applying intersection to get the ANDed results of keywords
     if len(results) > 1:
-        result.sort(key=len)  # to sort according to the lengths of the lists inside
+        # result.sort(key=len)  # to sort according to the lengths of the lists inside
         result = set(results[0]).intersection(*results[1:])
         print(f"Getting intersection required: {time.time() - start_time}")
     else:
