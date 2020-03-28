@@ -73,8 +73,8 @@ def linguistic_clean(token_file_path_pairs):
 
 
 def sort_tokens(token_file_path_pairs):
-    token_file_path_pairs.sort(key=lambda tup: tup[1])  # then by doc id (file paths)
-    token_file_path_pairs.sort(key=lambda tup: tup[0])  # sorting first by token
+    token_file_path_pairs.sort(key=lambda tup: tup[1])  # sorting done by doc ID
+    token_file_path_pairs.sort(key=lambda tup: tup[0])  # sorting done by token
     return token_file_path_pairs
 
 
